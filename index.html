@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation KeePass Interactive</title>
+    <style>
+        :root {
+            /* Palette Light */
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-subtle: #f1f5f9;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+        }
+
+        [data-theme="dark"] {
+            /* Palette Dark */
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-subtle: #334155;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-hover: #3b82f6;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .root {
+            max-width: 700px;
+            width: 100%;
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--surface-subtle);
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Navigation & Progress */
+        .top-bar { margin-bottom: 2rem; }
+        .prog-wrap {
+            height: 10px;
+            background: var(--surface-subtle);
+            border-radius: 20px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 20%;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .prog-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+
+        .module-dots {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+        .mdot {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            background: var(--surface-subtle);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .mdot.active { border-color: var(--primary); color: var(--primary); background: var(--surface); transform: scale(1.1); }
+        .mdot.done { background: var(--success); color: white; }
+
+        /* Typography */
+        .module-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        .mb-green { background: #dcfce7; color: #166534; }
+        .mb-blue { background: #dbeafe; color: #1e40af; }
+        .mb-purple { background: #f3e8ff; color: #6b21a8; }
+        .mb-amber { background: #fef3c7; color: #92400e; }
+        .mb-coral { background: #fee2e2; color: #991b1b; }
+
+        .module-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.2; }
+        .module-intro { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.05rem; }
+
+        /* Components */
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .card {
+            background: var(--surface-subtle);
+            padding: 1.25rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+        .card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .card-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem; }
+        .card-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+        .tip-box, .warn-box {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            display: flex; gap: 12px;
+        }
+        .tip-box { background: #f0fdf4; border-left: 4px solid var(--success); color: #166534; }
+        .warn-box { background: #fff7ed; border-left: 4px solid var(--warning); color: #9a3412; }
+        [data-theme="dark"] .tip-box { background: #064e3b33; color: #6ee7b7; }
+        [data-theme="dark"] .warn-box { background: #7c2d1233; color: #fdba74; }
+
+        .vid-wrap {
+            border-radius: var(--radius); overflow: hidden;
+            aspect-ratio: 16/9; background: #000;
+            margin-bottom: 1.5rem; box-shadow: var(--shadow);
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white; border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-main:hover { background: var(--primary-hover); transform: scale(1.02); }
+        .btn-sec {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); padding: 0.8rem 1.5rem;
+            border-radius: 12px; font-weight: 600; cursor: pointer;
+        }
+
+        /* Interactive Elements */
+        .chk-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 1rem; border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 0.75rem;
+            cursor: pointer; transition: 0.2s;
+        }
+        .chk-row:hover { background: var(--surface-subtle); }
+        .chk-row.ticked { border-color: var(--success); background: #f0fdf411; }
+        .chk-box {
+            width: 20px; height: 20px; border: 2px solid var(--border);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+        }
+        .ticked .chk-box { background: var(--success); border-color: var(--success); color: white; }
+
+        .quiz-opt {
+            width: 100%; text-align: left; padding: 1rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 0.5rem;
+            cursor: pointer; font-family: inherit; color: var(--text-main);
+        }
+        .quiz-opt:hover { border-color: var(--primary); }
+        .quiz-opt.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+        .quiz-opt.wrong { background: var(--danger) !important; color: white; border-color: var(--danger); }
+
+        /* KeePass Mock UI */
+        .interface-mock {
+            background: #1e1e2e; border-radius: 16px;
+            overflow: hidden; margin-bottom: 2rem; border: 1px solid #333;
+        }
+        .mock-bar { background: #11111b; padding: 10px 15px; display: flex; gap: 6px; }
+        .mock-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .mock-body { display: grid; grid-template-columns: 120px 1fr; height: 150px; }
+        .mock-sidebar { background: #181825; padding: 10px; border-right: 1px solid #313244; }
+        .mock-content { padding: 10px; background: #1e1e2e; }
+        .mock-row { 
+            display: flex; justify-content: space-between; 
+            padding: 6px; font-size: 0.75rem; color: #cdd6f4;
+            border-bottom: 1px solid #313244;
+        }
+        .mock-row.active { background: #45475a; border-radius: 4px; }
+
+        /* Password Gen Styling */
+        .pw-demo {
+            background: var(--surface-subtle); padding: 1.5rem;
+            border-radius: var(--radius); border: 1px solid var(--border);
+        }
+        .pw-val {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.2rem;
+            padding: 1rem; background: var(--surface);
+            border-radius: 8px; margin: 10px 0; text-align: center;
+            letter-spacing: 2px; border: 1px solid var(--border);
+        }
+
+        .screen { display: none; animation: fadeIn 0.4s ease-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+<div class="root">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Changer de mode">🌓</button>
+
+    <div class="top-bar">
+        <div class="prog-wrap"><div class="prog-fill" id="prog"></div></div>
+        <div class="prog-label" id="prog-txt">Module 1 / 5</div>
+    </div>
+
+    <div class="module-dots">
+        <div class="mdot active" id="dot-0" onclick="goto(0)">1</div>
+        <div class="mdot" id="dot-1" onclick="goto(1)">2</div>
+        <div class="mdot" id="dot-2" onclick="goto(2)">3</div>
+        <div class="mdot" id="dot-3" onclick="goto(3)">4</div>
+        <div class="mdot" id="dot-4" onclick="goto(4)">5</div>
+    </div>
+
+    <div class="screen active" id="s0">
+        <div class="module-badge mb-green">🔐 Comprendre</div>
+        <h2 class="module-title">Pourquoi KeePass va vous sauver la vie ?</h2>
+        <p class="module-intro">Fini les post-its sous le clavier et le même mot de passe "Maman123" partout. Bienvenue dans la sécurité pro.</p>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">🏦</div>
+                <div class="card-title">Coffre-fort ultra-blindé</div>
+                <div class="card-desc">Vos mots de passe sont chiffrés. Seule votre clé peut les lire.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🧠</div>
+                <div class="card-title">Une seule chose à retenir</div>
+                <div class="card-desc">Mémorisez le mot de passe centrale, KeePass fait tout le reste.</div>
+            </div>
+        </div>
+
+        <div class="tip-box">
+            <span>📺</span>
+            <div><strong>Intro rapide :</strong> Regardez cette vidéo pour comprendre l'essentiel en 4 minutes.</div>
+        </div>
+        
+        <div class="vid-wrap">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/N6YZSEUXP-s" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <div style="text-align: right;">
+            <button class="btn-main" onclick="next()">Installer KeePass →</button>
+        </div>
+    </div>
+
+    <div class="screen" id="s1">
+        <div class="module-badge mb-blue">💻 Installation</div>
+        <h2 class="module-title">Prêt en 2 minutes</h2>
+        
+        <div class="checklist">
+            <div class="chk-row" onclick="tick(this)">
+                <div class="chk-box"></div>
+                <div><strong>Télécharger :</strong> Sur keepass.info (Version 2.x)</div>
+            </div>
+            <div class="chk-row" onclick="tick(this)">
+                <div class="chk-box"></div>
+                <div><strong>Installer :</strong> Suivez l'assistant par défaut.</div>
+            </div>
+            <div class="chk-row" onclick="tick(this)">
+                <div class="chk-box"></div>
+                <div><strong>Français :</strong> Menu View > Change Language.</div>
+            </div>
+        </div>
+
+        <div class="warn-box">
+            <span>⚠️</span>
+            <div>Pas de droits admin ? Appelez le support informatique, ils débloquent ça en un clic.</div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+            <button class="btn-sec" onclick="prev()">Retour</button>
+            <button class="btn-main" onclick="next()">Créer ma base →</button>
+        </div>
+    </div>
+
+    <div class="screen" id="s2">
+        <div class="module-badge mb-purple">🗄️ Création</div>
+        <h2 class="module-title">Votre fichier .kdbx</h2>
+        <p class="module-intro">C'est ici que sont stockés vos secrets. Protégez-le avec un mot de passe maître solide.</p>
+
+        <div class="pw-demo">
+            <div class="card-title">Astuce pour un mot de passe centrale :</div>
+            <p class="card-desc">Utilisez une phrase : <em>"J'aime manger des sushis à 12h !"</em><br>
+            Devient : <strong>J'amdsà12h!</strong> (Incassable et facile à retenir).</p>
+        </div>
+
+        <div style="margin: 2rem 0;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Petit test :</p>
+            <div class="quiz-opts" id="q3">
+                <button class="quiz-opt" onclick="quiz('q3',this,false)">Je peux noter le mot de passe centrale sur un Post-it</button>
+                <button class="quiz-opt" onclick="quiz('q3',this,true)">Si je perds ce mot de passe, mes données sont perdues à jamais</button>
+            </div>
+            <div id="fb-q3"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+            <button class="btn-sec" onclick="prev()">Retour</button>
+            <button class="btn-main" onclick="next()">Apprendre à l'utiliser →</button>
+        </div>
+    </div>
+
+    <div class="screen" id="s3">
+        <div class="module-badge mb-amber">⚡ Pratiquer</div>
+        <h2 class="module-title">Au quotidien</h2>
+        
+        <div class="interface-mock">
+            <div class="mock-bar">
+                <div class="mock-dot" style="background:#ff5f57"></div>
+                <div class="mock-dot" style="background:#febc2e"></div>
+                <div class="mock-dot" style="background:#28c841"></div>
+            </div>
+            <div class="mock-body">
+                <div class="mock-sidebar">
+                    <div style="color:#555; font-size:10px; margin-bottom:10px">GROUPES</div>
+                    <div style="color:white; font-size:11px">📁 Emails</div>
+                    <div style="color:white; font-size:11px; margin-top:5px">📁 Serveurs</div>
+                </div>
+                <div class="mock-content">
+                    <div class="mock-row active">
+                        <span>Outlook Perso</span>
+                        <span style="opacity:0.5">••••••••</span>
+                    </div>
+                    <div class="mock-row">
+                        <span>Session Windows</span>
+                        <span style="opacity:0.5">••••••••</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-title">Copier (CTRL+C)</div>
+                <div class="card-desc">Le mot de passe reste 10s en mémoire, puis s'efface tout seul.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Générer (🎲)</div>
+                <div class="card-desc">Laissez KeePass inventer des mots de passe impossibles à deviner.</div>
+            </div>
+        </div>
+
+        <div class="pw-demo">
+            <div id="pw-out" class="pw-val">K#9pL2@mR!n</div>
+            <button class="btn-main" style="width:100%; justify-content:center" onclick="genPw()">🎲 Générer un mot de passe fort</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+            <button class="btn-sec" onclick="prev()">Retour</button>
+            <button class="btn-main" onclick="next()">Règles d'or →</button>
+        </div>
+    </div>
+
+    <div class="screen" id="s4">
+        <div class="module-badge mb-coral">🏆 Maîtriser</div>
+        <h2 class="module-title">Félicitations !</h2>
+        <p class="module-intro">Vous êtes presque un expert. N'oubliez jamais ces 3 points :</p>
+
+        <div class="checklist">
+            <div class="chk-row ticked">
+                <div class="chk-box">✓</div>
+                <div><strong>CTRL + L :</strong> Pour verrouiller KeePass quand vous quittez votre bureau.</div>
+            </div>
+            <div class="chk-row ticked">
+                <div class="chk-box">✓</div>
+                <div><strong>Sauvegarde :</strong> Copiez votre fichier .kdbx sur votre Cloud ou clé USB.</div>
+            </div>
+            <div class="chk-row ticked">
+                <div class="chk-box">✓</div>
+                <div><strong>Unique :</strong> Un mot de passe différent pour chaque site.</div>
+            </div>
+        </div>
+
+        <div id="final-badge" style="text-align:center; padding: 2rem; background: var(--surface-subtle); border-radius: 20px; margin-top: 1rem;">
+            <div style="font-size: 3rem;">🎉</div>
+            <h3 style="margin-bottom: 10px;">Formation Terminée</h3>
+            <p class="card-desc">Vous avez maintenant toutes les clés pour sécuriser votre vie numérique au travail.</p>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button class="btn-sec" onclick="goto(0)">Recommencer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cur = 0;
+    const total = 5;
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+
+    function goto(n) {
+        document.getElementById('s' + cur).classList.remove('active');
+        document.getElementById('dot-' + cur).classList.remove('active');
+        cur = n;
+        document.getElementById('s' + cur).classList.add('active');
+        document.getElementById('dot-' + cur).classList.add('active');
+        
+        // Update progress
+        const percent = ((cur + 1) / total) * 100;
+        document.getElementById('prog').style.width = percent + '%';
+        document.getElementById('prog-txt').textContent = `Module ${cur + 1} / ${total}`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function next() {
+        if (cur < total - 1) {
+            document.getElementById('dot-' + cur).classList.add('done');
+            document.getElementById('dot-' + cur).innerHTML = '✓';
+            goto(cur + 1);
+        }
+    }
+
+    function prev() {
+        if (cur > 0) goto(cur - 1);
+    }
+
+    function tick(row) {
+        row.classList.toggle('ticked');
+        const box = row.querySelector('.chk-box');
+        box.innerHTML = row.classList.contains('ticked') ? '✓' : '';
+    }
+
+    function quiz(id, btn, correct) {
+        const opts = document.getElementById(id).querySelectorAll('.quiz-opt');
+        opts.forEach(o => o.disabled = true);
+        btn.classList.add(correct ? 'correct' : 'wrong');
+        const fb = document.getElementById('fb-' + id);
+        fb.innerHTML = correct ? 
+            `<p style="color:var(--success); margin-top:10px; font-weight:600">✅ Exact ! La sécurité repose sur ce mot de passe unique.</p>` : 
+            `<p style="color:var(--danger); margin-top:10px; font-weight:600">❌ Attention, c'est l'inverse ! S'il est perdu, tout est chiffré sans retour.</p>`;
+    }
+
+    function genPw() {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let pw = "";
+        for (let i = 0; i < 12; i++) {
+            pw += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('pw-out').textContent = pw;
+    }
+</script>
+
+</body>
+</html>
